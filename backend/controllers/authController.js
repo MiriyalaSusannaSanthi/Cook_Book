@@ -6,22 +6,28 @@ const firebaseLogin = async (req, res) => {
   const { idToken } = req.body;
 
   try {
-    // Verify Firebase ID token
     const decoded = await admin.auth().verifyIdToken(idToken);
     const { uid, name, email, picture } = decoded;
 
-    // Find or create user in MongoDB
+    // Use name from token, fallback to email prefix (never "SmartChef User")
+    const displayName = name || email.split("@")[0];
+
     let user = await User.findOne({ firebaseUid: uid });
+
     if (!user) {
+      // New user — create with proper name
       user = await User.create({
         firebaseUid: uid,
-        name: name || "SmartChef User",
+        name: displayName,
         email,
         photoURL: picture || "",
       });
+    } else if (!user.name || user.name === "SmartChef User") {
+      // Existing user with bad name — fix it
+      user.name = displayName;
+      await user.save();
     }
 
-    // Issue our own JWT
     const token = jwt.sign(
       { id: user._id, email: user.email },
       process.env.JWT_SECRET,
