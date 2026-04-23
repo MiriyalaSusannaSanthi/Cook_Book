@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../api/axios";
+import CookMode from "../components/CookMode";
 
 export default function RecipeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [cookMode, setCookMode] = useState(false);
 
   useEffect(() => {
     API.get(`/recipes/${id}`)
@@ -20,6 +22,10 @@ export default function RecipeDetail() {
 
   return (
     <div style={styles.container}>
+      {cookMode && (
+        <CookMode recipe={recipe} onClose={() => setCookMode(false)} />
+      )}
+
       <button onClick={() => navigate(-1)} style={styles.back}>← Back</button>
 
       {recipe.imageURL && (
@@ -38,6 +44,11 @@ export default function RecipeDetail() {
         <div style={styles.metaBox}>🍽 <strong>{recipe.servings}</strong> servings</div>
         <div style={styles.metaBox}>👤 <strong>{recipe.createdBy?.name || "Unknown"}</strong></div>
       </div>
+
+      {/* Start Cook Mode Button */}
+      <button onClick={() => setCookMode(true)} style={styles.cookBtn}>
+        👨‍🍳 Start Cook Mode
+      </button>
 
       {/* Ingredients */}
       <div style={styles.section}>
@@ -79,9 +90,12 @@ const styles = {
   category: { background:"#fff3ee", color:"#ff6b35", padding:"4px 14px",
     borderRadius:"20px", fontSize:"0.85rem", fontWeight:"600" },
   description: { color:"#666", fontSize:"1rem", marginBottom:"20px", lineHeight:1.6 },
-  metaRow: { display:"flex", gap:"12px", marginBottom:"32px", flexWrap:"wrap" },
+  metaRow: { display:"flex", gap:"12px", marginBottom:"20px", flexWrap:"wrap" },
   metaBox: { background:"#f9f9f9", padding:"12px 20px", borderRadius:"10px",
     fontSize:"0.95rem", color:"#444" },
+  cookBtn: { width:"100%", padding:"14px", background:"#ff6b35", color:"#fff",
+    border:"none", borderRadius:"12px", fontSize:"1.1rem", cursor:"pointer",
+    fontWeight:"bold", marginBottom:"32px" },
   section: { marginBottom:"36px" },
   sectionTitle: { fontSize:"1.4rem", color:"#222", marginBottom:"16px",
     borderBottom:"2px solid #fff3ee", paddingBottom:"8px" },

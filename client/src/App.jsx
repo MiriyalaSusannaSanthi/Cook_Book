@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
+import VoiceAssistant from "./components/VoiceAssistant"; // 👈 add
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import AddRecipe from "./pages/AddRecipe";
@@ -18,6 +19,7 @@ function App() {
   return (
     <>
       {user && <Navbar />}
+      {user && <VoiceAssistant />}  {/* 👈 add */}
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
