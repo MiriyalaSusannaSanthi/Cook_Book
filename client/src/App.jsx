@@ -8,6 +8,8 @@ import AddRecipe from "./pages/AddRecipe";
 import MyRecipes from "./pages/MyRecipes";
 import WhatCanICook from "./pages/WhatCanICook";
 import RecipeDetail from "./pages/RecipeDetail";
+import AIRecipeGenerator from "./pages/AIRecipeGenerator";
+import MealPlanner from "./pages/MealPlanner";
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
@@ -19,7 +21,6 @@ function App() {
   return (
     <>
       {user && <Navbar />}
-      {user && <VoiceAssistant />}  {/* 👈 add */}
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
@@ -27,6 +28,10 @@ function App() {
         <Route path="/my-recipes" element={<ProtectedRoute><MyRecipes /></ProtectedRoute>} />
         <Route path="/what-can-i-cook" element={<ProtectedRoute><WhatCanICook /></ProtectedRoute>} />
         <Route path="/recipe/:id" element={<ProtectedRoute><RecipeDetail /></ProtectedRoute>} />
+        <Route path="/ai-generator" element={<ProtectedRoute><AIRecipeGenerator /></ProtectedRoute>} />
+        <Route path="/meal-planner" element={<ProtectedRoute><MealPlanner /></ProtectedRoute>} />
+
+
       </Routes>
     </>
   );

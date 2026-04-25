@@ -11,7 +11,7 @@ const recipeSchema = new mongoose.Schema(
       },
     ],
     steps: [{ type: String }],
-    cookTime: { type: Number }, // in minutes
+    cookTime: { type: Number },
     servings: { type: Number },
     imageURL: { type: String, default: "" },
     category: { type: String, default: "General" },
@@ -21,6 +21,8 @@ const recipeSchema = new mongoose.Schema(
       required: true,
     },
     isPublic: { type: Boolean, default: true },
+    // ⭐ Likes
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );

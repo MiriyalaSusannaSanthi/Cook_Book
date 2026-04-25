@@ -96,6 +96,27 @@ const deleteRecipe = async (req, res) => {
   }
 };
 
+const toggleLike = async (req, res) => {
+  try {
+    const recipe = await Recipe.findById(req.params.id);
+    if (!recipe) return res.status(404).json({ message: "Recipe not found" });
+
+    const userId = req.user.id;
+    const alreadyLiked = recipe.likes.includes(userId);
+
+    if (alreadyLiked) {
+      recipe.likes = recipe.likes.filter((id) => id.toString() !== userId);
+    } else {
+      recipe.likes.push(userId);
+    }
+
+    await recipe.save();
+    res.status(200).json({ likes: recipe.likes.length, liked: !alreadyLiked });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   addRecipe,
   getAllRecipes,
@@ -103,4 +124,5 @@ module.exports = {
   getMyRecipes,
   whatCanICook,
   deleteRecipe,
+  toggleLike, 
 };
