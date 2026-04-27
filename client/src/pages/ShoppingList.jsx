@@ -6,14 +6,38 @@ export default function ShoppingList() {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
 
+  // ⭐ Re-read localStorage every time page is visited
   useEffect(() => {
-    const saved = localStorage.getItem("smartchef_shopping");
-    if (saved) setItems(JSON.parse(saved));
+    loadItems();
+
+    // Also listen for storage changes from other tabs
+    window.addEventListener("storage", loadItems);
+    return () => window.removeEventListener("storage", loadItems);
   }, []);
 
+  const loadItems = () => {
+    try {
+      const saved = localStorage.getItem("smartchef_shopping");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setItems(Array.isArray(parsed) ? parsed : []);
+      } else {
+        setItems([]);
+      }
+    } catch (err) {
+      console.error("Failed to load shopping list:", err);
+      setItems([]);
+    }
+  };
+
   const save = (updated) => {
-    setItems(updated);
-    localStorage.setItem("smartchef_shopping", JSON.stringify(updated));
+    try {
+      localStorage.setItem("smartchef_shopping", JSON.stringify(updated));
+      setItems(updated);
+    } catch (err) {
+      console.error("Failed to save:", err);
+      toast.error("Failed to save changes");
+    }
   };
 
   const toggleItem = (index) => {
@@ -44,7 +68,6 @@ export default function ShoppingList() {
   const checkedCount = items.filter((i) => i.checked).length;
   const uncheckedCount = items.length - checkedCount;
 
-  // Group by recipe
   const grouped = items.reduce((acc, item, index) => {
     const key = item.recipeName || "Other";
     if (!acc[key]) acc[key] = [];
@@ -53,11 +76,12 @@ export default function ShoppingList() {
   }, {});
 
   return (
-    <div style={styles.container}>
+    <div style={styles.container} className="page">
       {/* Header */}
       <div style={styles.header}>
-        <button onClick={() => navigate(-1)} style={styles.back}>← Back</button>
+        <button onClick={() => navigate(-1)} style={styles.back}>←</button>
         <h2 style={styles.heading}>🛒 Shopping List</h2>
+        <div />
       </div>
 
       {items.length === 0 ? (
@@ -72,19 +96,19 @@ export default function ShoppingList() {
           </button>
         </div>
       ) : (
-        <>
+        <div style={styles.content}>
           {/* Stats */}
           <div style={styles.statsRow}>
             <div style={styles.statBox}>
               <span style={styles.statNum}>{items.length}</span>
-              <span style={styles.statLabel}>Total Items</span>
+              <span style={styles.statLabel}>Total</span>
             </div>
             <div style={styles.statBox}>
-              <span style={{ ...styles.statNum, color: "#38a169" }}>{checkedCount}</span>
+              <span style={{ ...styles.statNum, color: "#48BB78" }}>{checkedCount}</span>
               <span style={styles.statLabel}>Got It</span>
             </div>
             <div style={styles.statBox}>
-              <span style={{ ...styles.statNum, color: "#ff6b35" }}>{uncheckedCount}</span>
+              <span style={{ ...styles.statNum, color: "var(--primary)" }}>{uncheckedCount}</span>
               <span style={styles.statLabel}>Remaining</span>
             </div>
           </div>
@@ -93,9 +117,12 @@ export default function ShoppingList() {
           <div style={styles.progressBar}>
             <div style={{
               ...styles.progressFill,
-              width: items.length > 0 ? `${(checkedCount / items.length) * 100}%` : "0%"
+              width: items.length > 0
+                ? `${(checkedCount / items.length) * 100}%`
+                : "0%",
             }} />
           </div>
+
           {checkedCount === items.length && items.length > 0 && (
             <p style={styles.doneText}>🎉 All items collected! Ready to cook!</p>
           )}
@@ -112,7 +139,7 @@ export default function ShoppingList() {
             </button>
           </div>
 
-          {/* Grouped by Recipe */}
+          {/* Grouped Items */}
           {Object.entries(grouped).map(([recipeName, recipeItems]) => (
             <div key={recipeName} style={styles.group}>
               <p style={styles.groupTitle}>📖 {recipeName}</p>
@@ -122,15 +149,18 @@ export default function ShoppingList() {
                     key={item.originalIndex}
                     style={{
                       ...styles.item,
-                      background: item.checked ? "#f0fff4" : "#fff",
-                      borderColor: item.checked ? "#9ae6b4" : "#f0f0f0",
+                      background: item.checked ? "#F0FFF4" : "#fff",
+                      borderColor: item.checked ? "#9AE6B4" : "var(--border)",
                     }}
                   >
-                    <div style={styles.itemLeft} onClick={() => toggleItem(item.originalIndex)}>
+                    <div
+                      style={styles.itemLeft}
+                      onClick={() => toggleItem(item.originalIndex)}
+                    >
                       <div style={{
                         ...styles.checkbox,
-                        background: item.checked ? "#38a169" : "#fff",
-                        borderColor: item.checked ? "#38a169" : "#ddd",
+                        background: item.checked ? "#48BB78" : "#fff",
+                        borderColor: item.checked ? "#48BB78" : "var(--border)",
                       }}>
                         {item.checked && <span style={styles.checkmark}>✓</span>}
                       </div>
@@ -138,7 +168,7 @@ export default function ShoppingList() {
                         <p style={{
                           ...styles.itemName,
                           textDecoration: item.checked ? "line-through" : "none",
-                          color: item.checked ? "#aaa" : "#333",
+                          color: item.checked ? "#A0AEC0" : "var(--text)",
                         }}>
                           {item.name}
                         </p>
@@ -158,52 +188,93 @@ export default function ShoppingList() {
               </div>
             </div>
           ))}
-        </>
+        </div>
       )}
     </div>
   );
 }
 
 const styles = {
-  container: { padding: "24px", maxWidth: "700px", margin: "0 auto" },
-  header: { display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" },
-  back: { background: "none", border: "none", color: "#ff6b35", fontSize: "1rem",
-    cursor: "pointer", fontWeight: "600", padding: 0 },
-  heading: { fontSize: "1.8rem", margin: 0, color: "#222" },
-  emptyBox: { textAlign: "center", padding: "60px 20px" },
-  emptyIcon: { fontSize: "4rem", margin: "0 0 12px" },
-  emptyText: { fontSize: "1.2rem", color: "#444", margin: "0 0 8px", fontWeight: "600" },
-  emptyHint: { color: "#aaa", marginBottom: "24px" },
-  exploreBtn: { padding: "12px 28px", background: "#ff6b35", color: "#fff",
-    border: "none", borderRadius: "10px", cursor: "pointer", fontWeight: "bold", fontSize: "1rem" },
+  container: { minHeight: "100vh", background: "var(--bg)", paddingBottom: "100px" },
+  header: {
+    display: "flex", alignItems: "center", justifyContent: "space-between",
+    padding: "16px 20px", background: "#fff",
+    borderBottom: "1px solid var(--border)",
+    position: "sticky", top: 0, zIndex: 10,
+  },
+  back: {
+    background: "var(--bg)", border: "none", cursor: "pointer",
+    fontSize: "1.2rem", padding: "8px 12px", borderRadius: "10px", fontWeight: "700",
+  },
+  heading: { fontSize: "1.1rem", fontWeight: "800", color: "var(--text)" },
+  emptyBox: { textAlign: "center", padding: "80px 24px" },
+  emptyIcon: { fontSize: "4rem", margin: "0 0 16px" },
+  emptyText: { fontSize: "1.2rem", fontWeight: "700", color: "var(--text)", margin: "0 0 8px" },
+  emptyHint: { color: "var(--text-secondary)", marginBottom: "28px", fontSize: "0.9rem" },
+  exploreBtn: {
+    padding: "12px 28px", background: "var(--primary)", color: "#fff",
+    border: "none", borderRadius: "12px", cursor: "pointer", fontWeight: "700",
+  },
+  content: { padding: "20px 16px" },
   statsRow: { display: "flex", gap: "12px", marginBottom: "16px" },
-  statBox: { flex: 1, background: "#f9f9f9", borderRadius: "12px", padding: "14px",
-    textAlign: "center", display: "flex", flexDirection: "column", gap: "4px" },
-  statNum: { fontSize: "1.8rem", fontWeight: "bold", color: "#222" },
-  statLabel: { fontSize: "0.8rem", color: "#888" },
-  progressBar: { height: "8px", background: "#f0f0f0", borderRadius: "4px", marginBottom: "8px" },
-  progressFill: { height: "100%", background: "#38a169", borderRadius: "4px", transition: "width 0.4s" },
-  doneText: { color: "#38a169", fontWeight: "600", textAlign: "center", marginBottom: "12px" },
+  statBox: {
+    flex: 1, background: "#fff", borderRadius: "var(--radius-md)",
+    padding: "14px", textAlign: "center",
+    display: "flex", flexDirection: "column", gap: "4px",
+    boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)",
+  },
+  statNum: { fontSize: "1.8rem", fontWeight: "800", color: "var(--text)" },
+  statLabel: { fontSize: "0.75rem", color: "var(--text-secondary)" },
+  progressBar: {
+    height: "8px", background: "var(--border)",
+    borderRadius: "4px", marginBottom: "8px",
+  },
+  progressFill: {
+    height: "100%", background: "#48BB78",
+    borderRadius: "4px", transition: "width 0.4s",
+  },
+  doneText: {
+    color: "#48BB78", fontWeight: "700",
+    textAlign: "center", marginBottom: "16px",
+  },
   actionRow: { display: "flex", gap: "10px", marginBottom: "24px", flexWrap: "wrap" },
-  clearCheckedBtn: { padding: "8px 16px", background: "#f0fff4", color: "#38a169",
-    border: "1px solid #9ae6b4", borderRadius: "8px", cursor: "pointer", fontWeight: "500" },
-  clearAllBtn: { padding: "8px 16px", background: "#fff5f5", color: "#e53e3e",
-    border: "1px solid #feb2b2", borderRadius: "8px", cursor: "pointer", fontWeight: "500" },
+  clearCheckedBtn: {
+    padding: "10px 16px", background: "#F0FFF4", color: "#48BB78",
+    border: "1px solid #9AE6B4", borderRadius: "10px",
+    cursor: "pointer", fontWeight: "600", fontSize: "0.85rem",
+  },
+  clearAllBtn: {
+    padding: "10px 16px", background: "#FFF5F5", color: "#FC8181",
+    border: "1px solid #FEB2B2", borderRadius: "10px",
+    cursor: "pointer", fontWeight: "600", fontSize: "0.85rem",
+  },
   group: { marginBottom: "24px" },
-  groupTitle: { fontWeight: "700", color: "#ff6b35", marginBottom: "10px",
-    fontSize: "0.95rem", textTransform: "uppercase", letterSpacing: "0.5px" },
+  groupTitle: {
+    fontWeight: "700", color: "var(--primary)", marginBottom: "10px",
+    fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.5px",
+  },
   itemList: { display: "flex", flexDirection: "column", gap: "8px" },
-  item: { display: "flex", justifyContent: "space-between", alignItems: "center",
-    padding: "12px 16px", borderRadius: "10px", border: "1px solid",
-    transition: "all 0.2s", cursor: "pointer" },
-  itemLeft: { display: "flex", alignItems: "center", gap: "12px", flex: 1 },
-  checkbox: { width: "22px", height: "22px", borderRadius: "6px", border: "2px solid",
-    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-    transition: "all 0.2s" },
-  checkmark: { color: "#fff", fontSize: "0.8rem", fontWeight: "bold" },
-  itemName: { margin: 0, fontWeight: "500", fontSize: "0.95rem", transition: "all 0.2s" },
-  itemQty: { margin: 0, fontSize: "0.8rem", color: "#ff6b35" },
-  removeBtn: { background: "none", border: "none", cursor: "pointer",
-    color: "#ccc", fontSize: "0.9rem", padding: "4px 8px",
-    borderRadius: "6px", transition: "color 0.2s" },
+  item: {
+    display: "flex", justifyContent: "space-between", alignItems: "center",
+    padding: "14px 16px", borderRadius: "var(--radius-md)",
+    border: "1px solid", transition: "all 0.2s",
+    boxShadow: "var(--shadow-sm)",
+  },
+  itemLeft: {
+    display: "flex", alignItems: "center",
+    gap: "12px", flex: 1, cursor: "pointer",
+  },
+  checkbox: {
+    width: "24px", height: "24px", borderRadius: "8px",
+    border: "2px solid", display: "flex", alignItems: "center",
+    justifyContent: "center", flexShrink: 0, transition: "all 0.2s",
+  },
+  checkmark: { color: "#fff", fontSize: "0.85rem", fontWeight: "800" },
+  itemName: { margin: 0, fontWeight: "600", fontSize: "0.95rem", transition: "all 0.2s" },
+  itemQty: { margin: 0, fontSize: "0.8rem", color: "var(--primary)", fontWeight: "500" },
+  removeBtn: {
+    background: "none", border: "none", cursor: "pointer",
+    color: "#CBD5E0", fontSize: "0.9rem", padding: "4px 8px",
+    borderRadius: "6px",
+  },
 };

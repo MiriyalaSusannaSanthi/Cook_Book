@@ -27,49 +27,37 @@ export default function RecipeCard({ recipe }) {
   return (
     <div style={styles.card} onClick={() => navigate(`/recipe/${recipe._id}`)}>
       {/* Image */}
-      <div style={styles.imgWrapper}>
+      <div style={styles.imgBox}>
         {recipe.imageURL ? (
           <img src={recipe.imageURL} alt={recipe.title} style={styles.img} />
         ) : (
           <div style={styles.noImg}>🍳</div>
         )}
-        {/* Category Badge */}
-        <span style={styles.badge}>{recipe.category}</span>
-        {/* Like Button */}
+        {/* Badges */}
+        <span style={styles.categoryBadge}>{recipe.category}</span>
         <button onClick={handleLike} style={styles.likeBtn}>
-          <span style={{ color: liked ? "#FC8181" : "#fff", fontSize: "1.1rem" }}>
-            {liked ? "❤️" : "🤍"}
-          </span>
+          {liked ? "❤️" : "🤍"}
           <span style={styles.likeCount}>{likes}</span>
         </button>
       </div>
 
-      {/* Content */}
-      <div style={styles.content}>
+      {/* Info */}
+      <div style={styles.info}>
         <h3 style={styles.title}>{recipe.title}</h3>
         {recipe.description && (
           <p style={styles.desc}>{recipe.description}</p>
         )}
-
-        {/* Meta */}
-        <div style={styles.meta}>
-          <span style={styles.metaItem}>⏱ {recipe.cookTime}m</span>
-          <span style={styles.metaDot}>·</span>
-          <span style={styles.metaItem}>🍽 {recipe.servings} servings</span>
-          <span style={styles.metaDot}>·</span>
-          <span style={styles.metaItem}>👤 {recipe.createdBy?.name?.split(" ")[0] || "Chef"}</span>
+        <div style={styles.metaRow}>
+          <span style={styles.metaChip}>⏱ {recipe.cookTime}m</span>
+          <span style={styles.metaChip}>🍽 {recipe.servings} serv</span>
         </div>
-
-        {/* Ingredient Tags */}
-        <div style={styles.tags}>
-          {recipe.ingredients?.slice(0, 3).map((ing, i) => (
-            <span key={i} style={styles.tag}>{ing.name}</span>
-          ))}
-          {recipe.ingredients?.length > 3 && (
-            <span style={{ ...styles.tag, background: "var(--border)", color: "var(--text-secondary)" }}>
-              +{recipe.ingredients.length - 3}
-            </span>
-          )}
+        <div style={styles.author}>
+          <div style={styles.authorDot}>
+            {recipe.createdBy?.name?.charAt(0)?.toUpperCase()}
+          </div>
+          <span style={styles.authorName}>
+            {recipe.createdBy?.name?.split(" ")[0] || "Chef"}
+          </span>
         </div>
       </div>
     </div>
@@ -78,46 +66,60 @@ export default function RecipeCard({ recipe }) {
 
 const styles = {
   card: {
-    background: "var(--card)", borderRadius: "var(--radius-lg)",
+    background: "#fff", borderRadius: "16px",
     overflow: "hidden", cursor: "pointer",
-    boxShadow: "var(--shadow-sm)",
     border: "1px solid var(--border)",
-    transition: "transform 0.2s, box-shadow 0.2s",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+    transition: "transform 0.15s, box-shadow 0.15s",
   },
-  imgWrapper: { position: "relative" },
-  img: { width: "100%", height: "180px", objectFit: "cover", display: "block" },
+  imgBox: { position: "relative", height: "160px", overflow: "hidden" },
+  img: { width: "100%", height: "100%", objectFit: "cover" },
   noImg: {
-    width: "100%", height: "180px", background: "var(--primary-light)",
-    display: "flex", alignItems: "center", justifyContent: "center", fontSize: "3rem",
+    width: "100%", height: "100%",
+    background: "var(--primary-light)",
+    display: "flex", alignItems: "center",
+    justifyContent: "center", fontSize: "2.5rem",
   },
-  badge: {
+  categoryBadge: {
     position: "absolute", top: "10px", left: "10px",
-    background: "rgba(255,255,255,0.92)", backdropFilter: "blur(8px)",
-    color: "var(--primary)", padding: "4px 10px", borderRadius: "20px",
-    fontSize: "0.72rem", fontWeight: "700",
+    background: "rgba(255,255,255,0.95)",
+    color: "var(--primary)", padding: "4px 10px",
+    borderRadius: "20px", fontSize: "0.7rem",
+    fontWeight: "700", letterSpacing: "0.3px",
   },
   likeBtn: {
     position: "absolute", top: "10px", right: "10px",
-    background: "rgba(0,0,0,0.35)", backdropFilter: "blur(8px)",
-    border: "none", borderRadius: "20px", cursor: "pointer",
-    display: "flex", alignItems: "center", gap: "4px",
-    padding: "4px 10px",
+    background: "rgba(0,0,0,0.4)",
+    border: "none", borderRadius: "20px",
+    cursor: "pointer", display: "flex",
+    alignItems: "center", gap: "4px",
+    padding: "4px 10px", fontSize: "0.85rem",
   },
-  likeCount: { color: "#fff", fontSize: "0.8rem", fontWeight: "600" },
-  content: { padding: "14px" },
-  title: { fontSize: "1rem", fontWeight: "700", color: "var(--text)", margin: "0 0 4px" },
+  likeCount: { color: "#fff", fontSize: "0.75rem", fontWeight: "600" },
+  info: { padding: "14px" },
+  title: {
+    fontSize: "0.95rem", fontWeight: "700",
+    color: "var(--text)", margin: "0 0 5px",
+    lineHeight: 1.35,
+  },
   desc: {
-    fontSize: "0.82rem", color: "var(--text-secondary)",
+    fontSize: "0.78rem", color: "var(--text-secondary)",
     margin: "0 0 10px", lineHeight: 1.5,
-    overflow: "hidden", display: "-webkit-box",
-    WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+    display: "-webkit-box", WebkitLineClamp: 2,
+    WebkitBoxOrient: "vertical", overflow: "hidden",
   },
-  meta: { display: "flex", alignItems: "center", gap: "6px", marginBottom: "10px" },
-  metaItem: { fontSize: "0.78rem", color: "var(--text-secondary)" },
-  metaDot: { color: "var(--border)", fontSize: "0.8rem" },
-  tags: { display: "flex", flexWrap: "wrap", gap: "5px" },
-  tag: {
+  metaRow: { display: "flex", gap: "6px", marginBottom: "10px" },
+  metaChip: {
     background: "var(--primary-light)", color: "var(--primary)",
-    padding: "3px 8px", borderRadius: "20px", fontSize: "0.72rem", fontWeight: "600",
+    padding: "3px 9px", borderRadius: "20px",
+    fontSize: "0.72rem", fontWeight: "600",
   },
+  author: { display: "flex", alignItems: "center", gap: "6px" },
+  authorDot: {
+    width: "22px", height: "22px", borderRadius: "50%",
+    background: "var(--primary)", color: "#fff",
+    display: "flex", alignItems: "center",
+    justifyContent: "center", fontSize: "0.7rem", fontWeight: "700",
+  },
+  authorName: { fontSize: "0.75rem", color: "var(--text-secondary)", fontWeight: "500" },
 };

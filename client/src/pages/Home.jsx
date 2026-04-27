@@ -1,13 +1,22 @@
 import { useEffect, useState } from "react";
 import API from "../api/axios";
-import RecipeCard from "../components/RecipeCard";
+import MasonryGrid from "../components/MasonryGrid";
 
-const CATEGORIES = ["All", "Breakfast", "Lunch", "Dinner", "Snacks", "Drinks", "Dessert"];
+const CATEGORIES = [
+  { label: "All", icon: "🍽️" },
+  { label: "Breakfast", icon: "🌅" },
+  { label: "Lunch", icon: "☀️" },
+  { label: "Dinner", icon: "🌙" },
+  { label: "Snacks", icon: "🍿" },
+  { label: "Drinks", icon: "🥤" },
+  { label: "Dessert", icon: "🍰" },
+];
+
 const TIME_FILTERS = [
   { label: "Any Time", value: "" },
-  { label: "Under 15 mins", value: 15 },
-  { label: "Under 30 mins", value: 30 },
-  { label: "Under 60 mins", value: 60 },
+  { label: "≤ 15 mins", value: 15 },
+  { label: "≤ 30 mins", value: 30 },
+  { label: "≤ 60 mins", value: 60 },
 ];
 
 export default function Home() {
@@ -28,22 +37,26 @@ export default function Home() {
     const matchSearch =
       r.title.toLowerCase().includes(search.toLowerCase()) ||
       r.description?.toLowerCase().includes(search.toLowerCase()) ||
-      r.ingredients?.some((i) => i.name.toLowerCase().includes(search.toLowerCase()));
+      r.ingredients?.some((i) =>
+        i.name.toLowerCase().includes(search.toLowerCase())
+      );
     const matchCat = category === "All" || r.category === category;
     const matchTime = !maxTime || r.cookTime <= parseInt(maxTime);
     return matchSearch && matchCat && matchTime;
   });
 
   return (
-    <div style={styles.page} className="page">
-      {/* Hero Search */}
+    <div className="page">
+      {/* Hero */}
       <div style={styles.hero}>
-        <h1 style={styles.heroTitle}>What are you <span style={styles.heroAccent}>cooking</span> today?</h1>
-        <div style={styles.searchBox}>
+        <p style={styles.heroGreeting}>Good day, Chef! 👋</p>
+        <h1 style={styles.heroTitle}>Find your perfect recipe</h1>
+        {/* Search */}
+        <div style={styles.searchBar}>
           <span style={styles.searchIcon}>🔍</span>
           <input
             style={styles.searchInput}
-            placeholder="Search recipes, ingredients..."
+            placeholder="Search by name or ingredient..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -53,35 +66,44 @@ export default function Home() {
         </div>
       </div>
 
-      <div style={styles.content}>
-        {/* Category Pills */}
-        <div style={styles.pillsRow}>
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setCategory(cat)}
-              style={{
-                ...styles.pill,
-                background: category === cat ? "var(--primary)" : "var(--card)",
-                color: category === cat ? "#fff" : "var(--text-secondary)",
-                border: category === cat ? "none" : "1px solid var(--border)",
-                fontWeight: category === cat ? "700" : "500",
-              }}
-            >
-              {cat}
-            </button>
-          ))}
+      <div style={styles.body}>
+        {/* Categories */}
+        <div style={styles.categoryScroll}>
+          {CATEGORIES.map((cat) => {
+            const active = category === cat.label;
+            return (
+              <button
+                key={cat.label}
+                onClick={() => setCategory(cat.label)}
+                style={{
+                  ...styles.catBtn,
+                  background: active ? "var(--primary)" : "#fff",
+                  color: active ? "#fff" : "var(--text-secondary)",
+                  border: active ? "none" : "1px solid var(--border)",
+                  boxShadow: active ? "0 4px 12px rgba(255,107,53,0.3)" : "none",
+                }}
+              >
+                <span style={styles.catIcon}>{cat.icon}</span>
+                <span style={styles.catLabel}>{cat.label}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Time Filter + Results Count */}
+        {/* Filter + Count */}
         <div style={styles.filterRow}>
-          <p style={styles.resultCount}>
-            {loading ? "Loading..." : `${filtered.length} recipe${filtered.length !== 1 ? "s" : ""}`}
+          <p style={styles.count}>
+            {loading ? "Loading..." : (
+              <>
+                <span style={styles.countNum}>{filtered.length}</span>
+                {" "}recipes found
+              </>
+            )}
           </p>
           <select
             value={maxTime}
             onChange={(e) => setMaxTime(e.target.value)}
-            style={styles.select}
+            style={styles.timeSelect}
           >
             {TIME_FILTERS.map((t) => (
               <option key={t.label} value={t.value}>{t.label}</option>
@@ -89,29 +111,27 @@ export default function Home() {
           </select>
         </div>
 
-        {/* Grid */}
+        {/* Recipes */}
         {loading ? (
-          <div style={styles.grid}>
+          <div style={styles.skeletonGrid}>
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="skeleton" style={styles.skeletonCard} />
+              <div key={i} className="skeleton" style={styles.skeleton} />
             ))}
           </div>
         ) : filtered.length === 0 ? (
           <div style={styles.empty}>
-            <p style={styles.emptyIcon}>🍳</p>
+            <div style={styles.emptyIcon}>🍳</div>
             <p style={styles.emptyTitle}>No recipes found</p>
-            <p style={styles.emptySub}>Try different filters</p>
+            <p style={styles.emptySub}>Try a different search or category</p>
             <button
-              onClick={() => { setSearch(""); setCategory("All"); setMaxTime(""); }}
               style={styles.resetBtn}
+              onClick={() => { setSearch(""); setCategory("All"); setMaxTime(""); }}
             >
               Reset Filters
             </button>
           </div>
         ) : (
-          <div style={styles.grid}>
-            {filtered.map((r) => <RecipeCard key={r._id} recipe={r} />)}
-          </div>
+          <MasonryGrid recipes={filtered} />
         )}
       </div>
     </div>
@@ -119,57 +139,80 @@ export default function Home() {
 }
 
 const styles = {
-  page: { minHeight: "100vh" },
   hero: {
-    background: "linear-gradient(135deg, #FF6B35, #F7931E)",
-    padding: "28px 20px 48px",
+    background: "linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%)",
+    padding: "28px 20px 52px",
   },
-  heroTitle: { fontSize: "1.5rem", fontWeight: "800", color: "#fff", marginBottom: "16px", lineHeight: 1.3 },
-  heroAccent: { color: "#FFE0B2" },
-  searchBox: {
-    background: "#fff", borderRadius: "var(--radius-lg)",
-    display: "flex", alignItems: "center", gap: "10px",
-    padding: "4px 16px", boxShadow: "var(--shadow-lg)",
+  heroGreeting: {
+    color: "rgba(255,255,255,0.85)", fontSize: "0.9rem",
+    fontWeight: "500", marginBottom: "6px",
   },
-  searchIcon: { fontSize: "1rem" },
+  heroTitle: {
+    color: "#fff", fontSize: "1.6rem",
+    fontWeight: "800", marginBottom: "20px", lineHeight: 1.2,
+  },
+  searchBar: {
+    background: "#fff", borderRadius: "14px",
+    display: "flex", alignItems: "center", gap: "8px",
+    padding: "6px 14px",
+    boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+  },
+  searchIcon: { fontSize: "1rem", flexShrink: 0 },
   searchInput: {
-    flex: 1, padding: "12px 0", border: "none",
-    fontSize: "1rem", outline: "none", background: "transparent",
+    flex: 1, border: "none", outline: "none",
+    fontSize: "0.95rem", padding: "8px 0",
+    background: "transparent", color: "var(--text)",
   },
   clearBtn: {
-    background: "none", border: "none", cursor: "pointer",
-    color: "var(--text-secondary)", fontSize: "1rem",
+    background: "#f0f0f0", border: "none",
+    borderRadius: "50%", width: "22px", height: "22px",
+    cursor: "pointer", color: "#888",
+    display: "flex", alignItems: "center",
+    justifyContent: "center", fontSize: "0.7rem",
   },
-  content: { padding: "0 16px 24px", marginTop: "-20px" },
-  pillsRow: {
+  body: { padding: "0 16px 32px", marginTop: "-24px" },
+  categoryScroll: {
     display: "flex", gap: "8px", overflowX: "auto",
-    paddingBottom: "4px", marginBottom: "16px",
-    scrollbarWidth: "none",
+    paddingBottom: "4px", marginBottom: "20px",
+    scrollbarWidth: "none", msOverflowStyle: "none",
   },
-  pill: {
-    padding: "8px 16px", borderRadius: "20px", cursor: "pointer",
-    fontSize: "0.85rem", whiteSpace: "nowrap", transition: "all 0.2s",
-    boxShadow: "var(--shadow-sm)",
+  catBtn: {
+    display: "flex", alignItems: "center", gap: "5px",
+    padding: "8px 14px", borderRadius: "12px",
+    cursor: "pointer", whiteSpace: "nowrap",
+    fontSize: "0.82rem", fontWeight: "600",
+    transition: "all 0.2s", flexShrink: 0,
   },
-  filterRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" },
-  resultCount: { fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: "600" },
-  select: {
-    padding: "6px 12px", borderRadius: "10px",
-    border: "1px solid var(--border)", fontSize: "0.85rem",
-    background: "var(--card)", color: "var(--text)",
+  catIcon: { fontSize: "1rem" },
+  catLabel: {},
+  filterRow: {
+    display: "flex", justifyContent: "space-between",
+    alignItems: "center", marginBottom: "16px",
   },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
-    gap: "14px",
+  count: { fontSize: "0.85rem", color: "var(--text-secondary)" },
+  countNum: { fontWeight: "800", color: "var(--text)", fontSize: "1rem" },
+  timeSelect: {
+    padding: "7px 12px", borderRadius: "10px",
+    border: "1px solid var(--border)",
+    fontSize: "0.82rem", background: "#fff",
+    color: "var(--text)", cursor: "pointer",
   },
-  skeletonCard: { height: "260px", borderRadius: "var(--radius-lg)" },
-  empty: { textAlign: "center", padding: "60px 20px" },
-  emptyIcon: { fontSize: "3rem", marginBottom: "12px" },
-  emptyTitle: { fontWeight: "700", fontSize: "1.1rem", marginBottom: "6px" },
-  emptySub: { color: "var(--text-secondary)", marginBottom: "20px" },
+  skeletonGrid: {
+    display: "grid", gridTemplateColumns: "1fr 1fr",
+    gap: "12px",
+  },
+  skeleton: { height: "220px", borderRadius: "16px" },
+  empty: {
+    textAlign: "center", padding: "60px 20px",
+    display: "flex", flexDirection: "column", alignItems: "center", gap: "8px",
+  },
+  emptyIcon: { fontSize: "3.5rem", marginBottom: "8px" },
+  emptyTitle: { fontSize: "1.1rem", fontWeight: "700", color: "var(--text)" },
+  emptySub: { fontSize: "0.85rem", color: "var(--text-secondary)" },
   resetBtn: {
-    padding: "10px 24px", background: "var(--primary)", color: "#fff",
-    border: "none", borderRadius: "12px", cursor: "pointer", fontWeight: "700",
+    marginTop: "12px", padding: "10px 24px",
+    background: "var(--primary)", color: "#fff",
+    border: "none", borderRadius: "12px",
+    cursor: "pointer", fontWeight: "700", fontSize: "0.9rem",
   },
 };

@@ -5,6 +5,7 @@ import API from "../api/axios";
 import CookMode from "../components/CookMode";
 import CommentsSection from "../components/CommentsSection";
 import LanguageTranslator from "../components/LanguageTranslator";
+import NutritionInfo from "../components/NutritionInfo";
 
 export default function RecipeDetail() {
   const { id } = useParams();
@@ -26,20 +27,37 @@ export default function RecipeDetail() {
   }, [id]);
 
   const handleAddToShoppingList = () => {
+  try {
     const existing = JSON.parse(
       localStorage.getItem("smartchef_shopping") || "[]"
     );
+
     const newItems = recipe.ingredients.map((ing) => ({
       name: ing.name,
       quantity: ing.quantity,
       recipeName: recipe.title,
       checked: false,
     }));
-    const filtered = existing.filter((item) => item.recipeName !== recipe.title);
+
+    const filtered = existing.filter(
+      (item) => item.recipeName !== recipe.title
+    );
+
     const updated = [...filtered, ...newItems];
     localStorage.setItem("smartchef_shopping", JSON.stringify(updated));
-    toast.success(`${recipe.ingredients.length} ingredients added to shopping list! 🛒`);
-  };
+
+    // ⭐ Verify it saved correctly
+    const verify = localStorage.getItem("smartchef_shopping");
+    if (verify) {
+      toast.success(`${newItems.length} ingredients added to shopping list! 🛒`);
+    } else {
+      toast.error("Failed to save to shopping list");
+    }
+  } catch (err) {
+    console.error("Shopping list error:", err);
+    toast.error("Failed to save to shopping list");
+  }
+};
 
   if (loading) return <p style={styles.loading}>Loading recipe...</p>;
   if (!recipe) return <p style={styles.loading}>Recipe not found.</p>;
@@ -100,6 +118,9 @@ export default function RecipeDetail() {
           🛒 Add to Shopping List
         </button>
       </div>
+
+      {/* Nutrition Info */}
+<NutritionInfo recipe={recipe} />
 
       {/* Ingredients */}
       <div style={styles.section}>

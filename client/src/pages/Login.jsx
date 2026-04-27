@@ -1,5 +1,7 @@
-import { signInWithPopup, signInWithEmailAndPassword,
-  createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import {
+  signInWithPopup, signInWithEmailAndPassword,
+  createUserWithEmailAndPassword, updateProfile,
+} from "firebase/auth";
 import { auth, googleProvider } from "../firebase/firebase";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -22,7 +24,7 @@ export default function Login() {
     }
   };
 
-  const handleEmailAuth = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
@@ -42,53 +44,62 @@ export default function Login() {
   };
 
   return (
-    <div style={styles.container}>
-      {/* Hero Section */}
-      <div style={styles.hero}>
-        <div style={styles.heroContent}>
-          <div style={styles.heroIcon}>🍳</div>
-          <h1 style={styles.heroTitle}>SmartChef</h1>
-          <p style={styles.heroSub}>Your AI-powered personal kitchen assistant</p>
-          <div style={styles.heroFeatures}>
-            {["🤖 AI Recipe Generator", "🎤 Voice Assistant", "📅 Meal Planner", "🌐 Multi-language"].map((f) => (
-              <span key={f} style={styles.heroFeature}>{f}</span>
-            ))}
-          </div>
+    <div style={styles.page}>
+      {/* Top Section */}
+      <div style={styles.top}>
+        <div style={styles.logoBox}>
+          <span style={styles.logoEmoji}>🍳</span>
+        </div>
+        <h1 style={styles.appName}>SmartChef</h1>
+        <p style={styles.tagline}>Your AI-powered kitchen assistant</p>
+        <div style={styles.featureRow}>
+          {["🤖 AI Recipes", "🎤 Voice", "📅 Meal Plan", "🌐 Multilingual"].map((f) => (
+            <span key={f} style={styles.featureChip}>{f}</span>
+          ))}
         </div>
       </div>
 
-      {/* Auth Card */}
-      <div style={styles.card}>
-        <div style={styles.tabs}>
+      {/* Bottom Sheet */}
+      <div style={styles.sheet}>
+        {/* Tab Toggle */}
+        <div style={styles.tabRow}>
           <button
             onClick={() => setIsRegister(false)}
-            style={{ ...styles.tab, ...(isRegister ? {} : styles.tabActive) }}
+            style={{
+              ...styles.tab,
+              color: !isRegister ? "var(--primary)" : "var(--text-secondary)",
+              borderBottom: !isRegister ? "2px solid var(--primary)" : "2px solid transparent",
+            }}
           >
             Sign In
           </button>
           <button
             onClick={() => setIsRegister(true)}
-            style={{ ...styles.tab, ...(isRegister ? styles.tabActive : {}) }}
+            style={{
+              ...styles.tab,
+              color: isRegister ? "var(--primary)" : "var(--text-secondary)",
+              borderBottom: isRegister ? "2px solid var(--primary)" : "2px solid transparent",
+            }}
           >
             Register
           </button>
         </div>
 
-        <form onSubmit={handleEmailAuth} style={styles.form}>
+        <form onSubmit={handleSubmit} style={styles.form}>
           {isRegister && (
-            <div style={styles.inputGroup}>
+            <div style={styles.field}>
               <label style={styles.label}>Full Name</label>
               <input
                 style={styles.input}
                 type="text"
-                placeholder="John Doe"
+                placeholder="Your name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
               />
             </div>
           )}
-          <div style={styles.inputGroup}>
+          <div style={styles.field}>
             <label style={styles.label}>Email</label>
             <input
               style={styles.input}
@@ -99,7 +110,7 @@ export default function Login() {
               required
             />
           </div>
-          <div style={styles.inputGroup}>
+          <div style={styles.field}>
             <label style={styles.label}>Password</label>
             <input
               style={styles.input}
@@ -110,20 +121,23 @@ export default function Login() {
               required
             />
           </div>
-          <button type="submit" disabled={loading} style={styles.btnPrimary}>
-            {loading ? "Please wait..." : isRegister ? "Create Account 🎉" : "Sign In →"}
+          <button type="submit" disabled={loading} style={styles.primaryBtn}>
+            {loading ? "Please wait..." : isRegister ? "Create Account" : "Sign In"}
           </button>
         </form>
 
-        <div style={styles.divider}>
-          <div style={styles.dividerLine} />
-          <span style={styles.dividerText}>or</span>
-          <div style={styles.dividerLine} />
+        <div style={styles.orRow}>
+          <div style={styles.orLine} />
+          <span style={styles.orText}>or continue with</span>
+          <div style={styles.orLine} />
         </div>
 
-        <button onClick={handleGoogle} style={styles.btnGoogle}>
-          <img src="https://www.google.com/favicon.ico" alt="G" style={{ width: 18, height: 18 }} />
-          Continue with Google
+        <button onClick={handleGoogle} style={styles.googleBtn}>
+          <img
+            src="https://www.google.com/favicon.ico"
+            alt="G" style={{ width: 18, height: 18 }}
+          />
+          Google
         </button>
       </div>
     </div>
@@ -131,62 +145,76 @@ export default function Login() {
 }
 
 const styles = {
-  container: {
-    minHeight: "100vh", background: "var(--bg)",
-    display: "flex", flexDirection: "column",
+  page: {
+    minHeight: "100vh", display: "flex",
+    flexDirection: "column", background: "var(--primary)",
   },
-  hero: {
-    background: "linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FFB347 100%)",
-    padding: "48px 24px 40px", textAlign: "center",
+  top: {
+    flex: 1, display: "flex", flexDirection: "column",
+    alignItems: "center", justifyContent: "center",
+    padding: "48px 24px 32px", textAlign: "center",
   },
-  heroContent: { maxWidth: "400px", margin: "0 auto" },
-  heroIcon: { fontSize: "3.5rem", marginBottom: "12px" },
-  heroTitle: { fontSize: "2.2rem", fontWeight: "800", color: "#fff", margin: "0 0 8px", letterSpacing: "-1px" },
-  heroSub: { color: "rgba(255,255,255,0.85)", fontSize: "1rem", margin: "0 0 20px" },
-  heroFeatures: { display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "center" },
-  heroFeature: {
-    background: "rgba(255,255,255,0.2)", backdropFilter: "blur(8px)",
-    color: "#fff", padding: "4px 12px", borderRadius: "20px",
-    fontSize: "0.78rem", fontWeight: "600",
+  logoBox: {
+    width: "80px", height: "80px", borderRadius: "24px",
+    background: "rgba(255,255,255,0.2)",
+    display: "flex", alignItems: "center",
+    justifyContent: "center", marginBottom: "16px",
+    backdropFilter: "blur(8px)",
   },
-  card: {
-    background: "#fff", borderRadius: "24px 24px 0 0",
-    padding: "28px 24px", flex: 1,
-    boxShadow: "0 -4px 32px rgba(0,0,0,0.08)",
-    marginTop: "-16px",
+  logoEmoji: { fontSize: "2.5rem" },
+  appName: {
+    color: "#fff", fontSize: "2.2rem",
+    fontWeight: "800", margin: "0 0 8px",
   },
-  tabs: {
-    display: "flex", background: "var(--bg)", borderRadius: "12px",
-    padding: "4px", marginBottom: "24px",
+  tagline: { color: "rgba(255,255,255,0.8)", fontSize: "1rem", margin: "0 0 20px" },
+  featureRow: { display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "center" },
+  featureChip: {
+    background: "rgba(255,255,255,0.18)",
+    color: "#fff", padding: "5px 12px",
+    borderRadius: "20px", fontSize: "0.78rem", fontWeight: "600",
+  },
+  sheet: {
+    background: "#fff", borderRadius: "28px 28px 0 0",
+    padding: "28px 24px 40px",
+    boxShadow: "0 -8px 40px rgba(0,0,0,0.12)",
+  },
+  tabRow: {
+    display: "flex", marginBottom: "24px",
+    borderBottom: "1px solid var(--border)",
   },
   tab: {
-    flex: 1, padding: "10px", border: "none", background: "none",
-    borderRadius: "10px", cursor: "pointer", fontWeight: "600",
-    fontSize: "0.95rem", color: "var(--text-secondary)", transition: "all 0.2s",
+    flex: 1, padding: "12px", background: "none",
+    border: "none", cursor: "pointer",
+    fontWeight: "700", fontSize: "1rem",
+    transition: "all 0.2s",
   },
-  tabActive: { background: "#fff", color: "var(--primary)", boxShadow: "var(--shadow-sm)" },
-  form: { display: "flex", flexDirection: "column", gap: "16px", marginBottom: "20px" },
-  inputGroup: { display: "flex", flexDirection: "column", gap: "6px" },
-  label: { fontSize: "0.85rem", fontWeight: "600", color: "var(--text-secondary)" },
+  form: { display: "flex", flexDirection: "column", gap: "16px" },
+  field: { display: "flex", flexDirection: "column", gap: "6px" },
+  label: { fontSize: "0.82rem", fontWeight: "600", color: "var(--text-secondary)" },
   input: {
-    padding: "14px 16px", borderRadius: "var(--radius-md)",
-    border: "1.5px solid var(--border)", fontSize: "1rem",
-    outline: "none", transition: "border 0.2s",
-    background: "var(--bg)",
+    padding: "14px 16px", borderRadius: "12px",
+    border: "1.5px solid var(--border)",
+    fontSize: "1rem", outline: "none",
+    background: "var(--bg)", color: "var(--text)",
+    transition: "border 0.2s",
   },
-  btnPrimary: {
-    padding: "15px", background: "var(--primary)", color: "#fff",
-    border: "none", borderRadius: "var(--radius-md)", fontSize: "1rem",
-    cursor: "pointer", fontWeight: "700", marginTop: "4px",
+  primaryBtn: {
+    padding: "15px", background: "var(--primary)",
+    color: "#fff", border: "none", borderRadius: "12px",
+    fontSize: "1rem", cursor: "pointer", fontWeight: "700",
+    marginTop: "4px", boxShadow: "0 4px 16px rgba(255,107,53,0.3)",
   },
-  divider: { display: "flex", alignItems: "center", gap: "12px", margin: "20px 0" },
-  dividerLine: { flex: 1, height: "1px", background: "var(--border)" },
-  dividerText: { fontSize: "0.85rem", color: "var(--text-secondary)" },
-  btnGoogle: {
+  orRow: {
+    display: "flex", alignItems: "center",
+    gap: "12px", margin: "20px 0",
+  },
+  orLine: { flex: 1, height: "1px", background: "var(--border)" },
+  orText: { fontSize: "0.82rem", color: "var(--text-secondary)", whiteSpace: "nowrap" },
+  googleBtn: {
     width: "100%", padding: "14px", background: "#fff",
-    border: "1.5px solid var(--border)", borderRadius: "var(--radius-md)",
+    border: "1.5px solid var(--border)", borderRadius: "12px",
     fontSize: "0.95rem", cursor: "pointer", fontWeight: "600",
-    display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
-    color: "var(--text)",
+    display: "flex", alignItems: "center",
+    justifyContent: "center", gap: "10px", color: "var(--text)",
   },
 };
