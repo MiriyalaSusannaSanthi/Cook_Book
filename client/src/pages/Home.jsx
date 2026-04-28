@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../api/axios";
-import MasonryGrid from "../components/MasonryGrid";
+import RecipeGrid from "../components/MasonryGrid";
 
 const CATEGORIES = [
   { label: "All", icon: "🍽️" },
@@ -49,14 +49,13 @@ export default function Home() {
     <div className="page">
       {/* Hero */}
       <div style={styles.hero}>
-        <p style={styles.heroGreeting}>Good day, Chef! 👋</p>
-        <h1 style={styles.heroTitle}>Find your perfect recipe</h1>
-        {/* Search */}
+        <p style={styles.greeting}>Good day, Chef! 👋</p>
+        <h1 style={styles.heroTitle}>Find your perfect<br />recipe today</h1>
         <div style={styles.searchBar}>
-          <span style={styles.searchIcon}>🔍</span>
+          <span>🔍</span>
           <input
             style={styles.searchInput}
-            placeholder="Search by name or ingredient..."
+            placeholder="Search recipes, ingredients..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -67,8 +66,8 @@ export default function Home() {
       </div>
 
       <div style={styles.body}>
-        {/* Categories */}
-        <div style={styles.categoryScroll}>
+        {/* Category Scroll */}
+        <div style={styles.catScroll}>
           {CATEGORIES.map((cat) => {
             const active = category === cat.label;
             return (
@@ -77,28 +76,25 @@ export default function Home() {
                 onClick={() => setCategory(cat.label)}
                 style={{
                   ...styles.catBtn,
-                  background: active ? "var(--primary)" : "#fff",
-                  color: active ? "#fff" : "var(--text-secondary)",
-                  border: active ? "none" : "1px solid var(--border)",
-                  boxShadow: active ? "0 4px 12px rgba(255,107,53,0.3)" : "none",
+                  background: active ? "#FF6B35" : "#fff",
+                  color: active ? "#fff" : "#6B7280",
+                  border: active ? "none" : "1px solid #E5E7EB",
+                  boxShadow: active
+                    ? "0 4px 14px rgba(255,107,53,0.35)"
+                    : "0 1px 4px rgba(0,0,0,0.05)",
                 }}
               >
-                <span style={styles.catIcon}>{cat.icon}</span>
+                <span>{cat.icon}</span>
                 <span style={styles.catLabel}>{cat.label}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Filter + Count */}
-        <div style={styles.filterRow}>
-          <p style={styles.count}>
-            {loading ? "Loading..." : (
-              <>
-                <span style={styles.countNum}>{filtered.length}</span>
-                {" "}recipes found
-              </>
-            )}
+        {/* Top Row */}
+        <div style={styles.topRow}>
+          <p style={styles.countText}>
+            <strong>{filtered.length}</strong> recipes
           </p>
           <select
             value={maxTime}
@@ -111,16 +107,16 @@ export default function Home() {
           </select>
         </div>
 
-        {/* Recipes */}
+        {/* Grid */}
         {loading ? (
           <div style={styles.skeletonGrid}>
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="skeleton" style={styles.skeleton} />
+            {Array(9).fill(0).map((_, i) => (
+              <div key={i} className="skeleton" style={styles.skeletonCard} />
             ))}
           </div>
         ) : filtered.length === 0 ? (
           <div style={styles.empty}>
-            <div style={styles.emptyIcon}>🍳</div>
+            <p style={{ fontSize: "3rem" }}>🍳</p>
             <p style={styles.emptyTitle}>No recipes found</p>
             <p style={styles.emptySub}>Try a different search or category</p>
             <button
@@ -131,7 +127,7 @@ export default function Home() {
             </button>
           </div>
         ) : (
-          <MasonryGrid recipes={filtered} />
+          <RecipeGrid recipes={filtered} />
         )}
       </div>
     </div>
@@ -140,41 +136,40 @@ export default function Home() {
 
 const styles = {
   hero: {
-    background: "linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%)",
-    padding: "28px 20px 52px",
+    background: "linear-gradient(135deg, #FF6B35, #FF8C42)",
+    padding: "24px 20px 52px",
   },
-  heroGreeting: {
-    color: "rgba(255,255,255,0.85)", fontSize: "0.9rem",
-    fontWeight: "500", marginBottom: "6px",
+  greeting: {
+    color: "rgba(255,255,255,0.85)",
+    fontSize: "0.9rem", fontWeight: "500", marginBottom: "6px",
   },
   heroTitle: {
-    color: "#fff", fontSize: "1.6rem",
-    fontWeight: "800", marginBottom: "20px", lineHeight: 1.2,
+    color: "#fff", fontSize: "1.7rem",
+    fontWeight: "800", marginBottom: "20px", lineHeight: 1.25,
   },
   searchBar: {
     background: "#fff", borderRadius: "14px",
-    display: "flex", alignItems: "center", gap: "8px",
-    padding: "6px 14px",
-    boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+    display: "flex", alignItems: "center", gap: "10px",
+    padding: "6px 16px",
+    boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
   },
-  searchIcon: { fontSize: "1rem", flexShrink: 0 },
   searchInput: {
     flex: 1, border: "none", outline: "none",
-    fontSize: "0.95rem", padding: "8px 0",
-    background: "transparent", color: "var(--text)",
+    fontSize: "0.95rem", padding: "10px 0",
+    background: "transparent", color: "#1C1C1E",
   },
   clearBtn: {
-    background: "#f0f0f0", border: "none",
-    borderRadius: "50%", width: "22px", height: "22px",
-    cursor: "pointer", color: "#888",
+    background: "#F3F4F6", border: "none",
+    borderRadius: "50%", width: "24px", height: "24px",
+    cursor: "pointer", color: "#9CA3AF",
     display: "flex", alignItems: "center",
-    justifyContent: "center", fontSize: "0.7rem",
+    justifyContent: "center", fontSize: "0.72rem", flexShrink: 0,
   },
-  body: { padding: "0 16px 32px", marginTop: "-24px" },
-  categoryScroll: {
-    display: "flex", gap: "8px", overflowX: "auto",
-    paddingBottom: "4px", marginBottom: "20px",
-    scrollbarWidth: "none", msOverflowStyle: "none",
+  body: { padding: "0 12px 32px", marginTop: "-24px" },
+  catScroll: {
+    display: "flex", gap: "8px",
+    overflowX: "auto", paddingBottom: "4px",
+    marginBottom: "18px", scrollbarWidth: "none",
   },
   catBtn: {
     display: "flex", alignItems: "center", gap: "5px",
@@ -183,35 +178,36 @@ const styles = {
     fontSize: "0.82rem", fontWeight: "600",
     transition: "all 0.2s", flexShrink: 0,
   },
-  catIcon: { fontSize: "1rem" },
-  catLabel: {},
-  filterRow: {
+  catLabel: { fontSize: "0.82rem" },
+  topRow: {
     display: "flex", justifyContent: "space-between",
-    alignItems: "center", marginBottom: "16px",
+    alignItems: "center", marginBottom: "14px",
   },
-  count: { fontSize: "0.85rem", color: "var(--text-secondary)" },
-  countNum: { fontWeight: "800", color: "var(--text)", fontSize: "1rem" },
+  countText: { fontSize: "0.85rem", color: "#6B7280" },
   timeSelect: {
     padding: "7px 12px", borderRadius: "10px",
-    border: "1px solid var(--border)",
-    fontSize: "0.82rem", background: "#fff",
-    color: "var(--text)", cursor: "pointer",
+    border: "1px solid #E5E7EB", fontSize: "0.82rem",
+    background: "#fff", color: "#1C1C1E", cursor: "pointer",
   },
   skeletonGrid: {
-    display: "grid", gridTemplateColumns: "1fr 1fr",
-    gap: "12px",
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "8px",
   },
-  skeleton: { height: "220px", borderRadius: "16px" },
+  skeletonCard: {
+    borderRadius: "14px",
+    paddingBottom: "100%",
+  },
   empty: {
     textAlign: "center", padding: "60px 20px",
-    display: "flex", flexDirection: "column", alignItems: "center", gap: "8px",
+    display: "flex", flexDirection: "column",
+    alignItems: "center", gap: "8px",
   },
-  emptyIcon: { fontSize: "3.5rem", marginBottom: "8px" },
-  emptyTitle: { fontSize: "1.1rem", fontWeight: "700", color: "var(--text)" },
-  emptySub: { fontSize: "0.85rem", color: "var(--text-secondary)" },
+  emptyTitle: { fontSize: "1.1rem", fontWeight: "700", color: "#1C1C1E" },
+  emptySub: { fontSize: "0.85rem", color: "#6B7280" },
   resetBtn: {
     marginTop: "12px", padding: "10px 24px",
-    background: "var(--primary)", color: "#fff",
+    background: "#FF6B35", color: "#fff",
     border: "none", borderRadius: "12px",
     cursor: "pointer", fontWeight: "700", fontSize: "0.9rem",
   },

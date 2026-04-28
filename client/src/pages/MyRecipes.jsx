@@ -72,35 +72,35 @@ export default function MyRecipes() {
         </div>
 
         {loading ? (
-          <div style={styles.grid}>
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="skeleton" style={styles.skeleton} />
-            ))}
-          </div>
-        ) : recipes.length === 0 ? (
-          <div style={styles.empty}>
-            <p style={styles.emptyIcon}>👨‍🍳</p>
-            <p style={styles.emptyTitle}>No recipes yet</p>
-            <p style={styles.emptySub}>Share your first recipe!</p>
-            <button onClick={() => navigate("/add-recipe")} style={styles.emptyBtn}>
-              + Add Recipe
-            </button>
-          </div>
-        ) : (
-          <div style={styles.grid}>
-            {recipes.map((r) => (
-              <div key={r._id} style={styles.cardWrap}>
-                <RecipeCard recipe={r} />
-                <button
-                  onClick={(e) => handleDelete(r._id, e)}
-                  style={styles.deleteBtn}
-                >
-                  🗑 Delete
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+  <div style={styles.grid}>
+    {Array(6).fill(0).map((_, i) => (
+      <div key={i} className="skeleton" style={styles.skeleton} />
+    ))}
+  </div>
+) : recipes.length === 0 ? (
+  <div style={styles.empty}>
+    <p style={styles.emptyIcon}>👨‍🍳</p>
+    <p style={styles.emptyTitle}>No recipes yet</p>
+    <p style={styles.emptySub}>Share your first recipe!</p>
+    <button onClick={() => navigate("/add-recipe")} style={styles.emptyBtn}>
+      + Add Recipe
+    </button>
+  </div>
+) : (
+  <div style={styles.grid}>
+    {recipes.map((r) => (
+      <div key={r._id} style={{ position: "relative" }}>
+        <RecipeCard recipe={r} />
+        <button
+          onClick={(e) => handleDelete(r._id, e)}
+          style={styles.deleteBtn}
+        >
+          🗑
+        </button>
+      </div>
+    ))}
+  </div>
+)}
       </div>
     </div>
   );
@@ -147,17 +147,24 @@ const styles = {
     fontWeight: "700", fontSize: "0.85rem",
   },
   grid: {
-    display: "grid", gridTemplateColumns: "1fr 1fr",
-    gap: "12px",
-  },
-  skeleton: { height: "240px", borderRadius: "16px" },
-  cardWrap: { display: "flex", flexDirection: "column", gap: "6px" },
-  deleteBtn: {
-    padding: "8px", background: "#FEF2F2", color: "#EF4444",
-    border: "1px solid #FECACA", borderRadius: "10px",
-    cursor: "pointer", fontWeight: "600", fontSize: "0.82rem",
-    textAlign: "center",
-  },
+  display: "grid",
+  gridTemplateColumns: "repeat(3, 1fr)",
+  gap: "8px",
+},
+skeleton: {
+  borderRadius: "14px",
+  paddingBottom: "100%",
+},
+deleteBtn: {
+  position: "absolute", top: "6px", left: "6px",
+  background: "rgba(239,68,68,0.85)",
+  border: "none", borderRadius: "50%",
+  width: "26px", height: "26px",
+  display: "flex", alignItems: "center",
+  justifyContent: "center", cursor: "pointer",
+  fontSize: "0.75rem", color: "#fff",
+  boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
+},
   empty: { textAlign: "center", padding: "60px 20px" },
   emptyIcon: { fontSize: "3.5rem", marginBottom: "12px" },
   emptyTitle: { fontWeight: "700", fontSize: "1.1rem", marginBottom: "6px" },
