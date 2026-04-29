@@ -26,34 +26,45 @@ export default function RecipeCard({ recipe }) {
 
   return (
     <div style={styles.card} onClick={() => navigate(`/recipe/${recipe._id}`)}>
-      {/* Square Image Box */}
-      <div style={styles.imgBox}>
+      {/* Image */}
+      <div style={styles.imgWrap}>
         {recipe.imageURL ? (
           <img src={recipe.imageURL} alt={recipe.title} style={styles.img} />
         ) : (
           <div style={styles.noImg}>🍳</div>
         )}
-        {/* Overlay on hover */}
-        <div style={styles.overlay}>
-          <span style={styles.overlayLikes}>❤️ {likes}</span>
-        </div>
+        {/* Gradient overlay */}
+        <div style={styles.gradient} />
         {/* Like button */}
-        <button onClick={handleLike} style={styles.likeBtn}>
-          {liked ? "❤️" : "🤍"}
+        <button
+          onClick={handleLike}
+          style={{
+            ...styles.likeBtn,
+            background: liked ? "#FF6B35" : "rgba(255,255,255,0.95)",
+          }}
+        >
+          <span style={{ fontSize: "11px" }}>{liked ? "❤️" : "🤍"}</span>
         </button>
+        {/* Cook time badge */}
+        <div style={styles.timeBadge}>
+          <span style={styles.timeText}>⏱ {recipe.cookTime}m</span>
+        </div>
       </div>
 
-      {/* Card Info */}
-      <div style={styles.info}>
-        <p style={styles.title}>{recipe.title}</p>
-        <div style={styles.meta}>
-          <span style={styles.metaText}>⏱ {recipe.cookTime}m</span>
-          <span style={styles.dot}>·</span>
-          <span style={{
-            ...styles.categoryTag,
-          }}>
-            {recipe.category}
-          </span>
+      {/* Content */}
+      <div style={styles.content}>
+        <p style={styles.category}>{recipe.category?.toUpperCase()}</p>
+        <h3 style={styles.title}>{recipe.title}</h3>
+        <div style={styles.footer}>
+          <div style={styles.authorRow}>
+            <div style={styles.authorDot}>
+              {recipe.createdBy?.name?.charAt(0)?.toUpperCase() || "C"}
+            </div>
+            <span style={styles.authorName}>
+              {recipe.createdBy?.name?.split(" ")[0] || "Chef"}
+            </span>
+          </div>
+          <span style={styles.likesText}>❤️ {likes}</span>
         </div>
       </div>
     </div>
@@ -66,68 +77,109 @@ const styles = {
     borderRadius: "14px",
     overflow: "hidden",
     cursor: "pointer",
-    border: "1px solid #F0F0F0",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-    transition: "transform 0.15s",
+    boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+    transition: "transform 0.15s, box-shadow 0.15s",
   },
-  imgBox: {
+  imgWrap: {
     position: "relative",
     width: "100%",
-    paddingBottom: "100%", // Perfect square
+    paddingBottom: "72%",
     overflow: "hidden",
     background: "#FFF4F0",
   },
   img: {
     position: "absolute",
-    top: 0, left: 0,
-    width: "100%", height: "100%",
+    inset: 0,
+    width: "100%",
+    height: "100%",
     objectFit: "cover",
+    transition: "transform 0.3s",
   },
   noImg: {
     position: "absolute",
-    top: 0, left: 0,
-    width: "100%", height: "100%",
-    display: "flex", alignItems: "center",
-    justifyContent: "center", fontSize: "2rem",
+    inset: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "2rem",
     background: "#FFF4F0",
   },
-  overlay: {
+  gradient: {
     position: "absolute",
     bottom: 0, left: 0, right: 0,
-    background: "linear-gradient(transparent, rgba(0,0,0,0.5))",
-    padding: "20px 8px 8px",
-    display: "flex", justifyContent: "flex-end",
-  },
-  overlayLikes: {
-    color: "#fff", fontSize: "0.72rem",
-    fontWeight: "700",
+    height: "50%",
+    background: "linear-gradient(transparent, rgba(0,0,0,0.3))",
   },
   likeBtn: {
-    position: "absolute", top: "6px", right: "6px",
-    background: "rgba(255,255,255,0.9)",
+    position: "absolute",
+    top: "8px", right: "8px",
     border: "none", borderRadius: "50%",
     width: "28px", height: "28px",
     display: "flex", alignItems: "center",
     justifyContent: "center", cursor: "pointer",
-    fontSize: "0.85rem",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.15)",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+    transition: "all 0.2s",
   },
-  info: { padding: "10px 10px 12px" },
+  timeBadge: {
+    position: "absolute",
+    bottom: "8px", right: "8px",
+    background: "rgba(0,0,0,0.55)",
+    borderRadius: "8px",
+    padding: "3px 7px",
+  },
+  timeText: {
+    color: "#fff",
+    fontSize: "10px",
+    fontWeight: "700",
+  },
+  content: {
+    padding: "10px 12px 12px",
+  },
+  category: {
+    fontSize: "9px",
+    fontWeight: "700",
+    color: "#FF6B35",
+    letterSpacing: "0.8px",
+    margin: "0 0 4px",
+  },
   title: {
-    fontSize: "0.82rem", fontWeight: "700",
-    color: "#1C1C1E", margin: "0 0 5px",
+    fontSize: "13px",
+    fontWeight: "700",
+    color: "#1C1C1E",
+    margin: "0 0 8px",
     lineHeight: 1.3,
-    overflow: "hidden", display: "-webkit-box",
-    WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+    display: "-webkit-box",
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: "vertical",
+    overflow: "hidden",
   },
-  meta: {
-    display: "flex", alignItems: "center", gap: "5px",
+  footer: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
-  metaText: { fontSize: "0.68rem", color: "#9CA3AF" },
-  dot: { color: "#D1D5DB", fontSize: "0.7rem" },
-  categoryTag: {
-    fontSize: "0.65rem", fontWeight: "700",
-    color: "#FF6B35", background: "#FFF4F0",
-    padding: "2px 7px", borderRadius: "10px",
+  authorRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "5px",
+  },
+  authorDot: {
+    width: "18px", height: "18px",
+    borderRadius: "50%",
+    background: "#FF6B35",
+    color: "#fff",
+    display: "flex", alignItems: "center",
+    justifyContent: "center",
+    fontSize: "9px", fontWeight: "700",
+  },
+  authorName: {
+    fontSize: "11px",
+    color: "#9CA3AF",
+    fontWeight: "500",
+  },
+  likesText: {
+    fontSize: "11px",
+    color: "#9CA3AF",
+    fontWeight: "600",
   },
 };

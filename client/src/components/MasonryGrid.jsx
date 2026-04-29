@@ -16,6 +16,6 @@ const styles = {
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "8px",
+    gap: "10px",
   },
 };
