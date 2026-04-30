@@ -10,7 +10,7 @@ const app = express();
 
 app.use(cors({
   origin: [
-    "http://localhost:5173",
+    "https://smart-chef-o9dq.onrender.com",
     "https://your-app-name.vercel.app",
   ],
   credentials: true,
