@@ -36,12 +36,16 @@ export default function CookMode({ recipe, onClose, language = "en-US" }) {
   };
 
   const next = () => {
-    if (currentStep < totalSteps - 1) {
-      setCurrentStep((s) => s + 1);
-    } else {
-      speak("You have completed all steps. Enjoy your meal!");
-    }
-  };
+  if (currentStep < totalSteps - 1) {
+    setCurrentStep((s) => s + 1);
+  } else {
+    speak("You have completed all steps. Enjoy your meal!");
+    // ⭐ Close cook mode after 2 seconds
+    setTimeout(() => {
+      onClose();
+    }, 2000);
+  }
+};
 
   const prev = () => {
     if (currentStep > 0) setCurrentStep((s) => s - 1);
@@ -116,17 +120,32 @@ export default function CookMode({ recipe, onClose, language = "en-US" }) {
         </div>
 
         {/* Controls */}
-        <div style={styles.controls}>
-          <button onClick={prev} disabled={currentStep === 0} style={styles.navBtn}>
-            ← Prev
-          </button>
-          <button onClick={repeat} style={styles.repeatBtn}>
-            🔊 Repeat
-          </button>
-          <button onClick={next} style={styles.navBtn}>
-            {currentStep === totalSteps - 1 ? "✅ Done" : "Next →"}
-          </button>
-        </div>
+<div style={styles.controls}>
+  <button onClick={prev} disabled={currentStep === 0} style={{
+    ...styles.navBtn,
+    opacity: currentStep === 0 ? 0.4 : 1,
+  }}>
+    ← Prev
+  </button>
+  <button onClick={repeat} style={styles.repeatBtn}>
+    🔊 Repeat
+  </button>
+  <button onClick={next} style={{
+    ...styles.navBtn,
+    background: currentStep === totalSteps - 1 ? "#48BB78" : "#FF6B35",
+  }}>
+    {currentStep === totalSteps - 1 ? "✅ Done!" : "Next →"}
+  </button>
+</div>
+
+{/* Completion message */}
+{currentStep === totalSteps - 1 && (
+  <div style={styles.completionBox}>
+    <p style={styles.completionText}>
+      🎉 You're on the last step! Click Done to finish cooking.
+    </p>
+  </div>
+)}
 
         {/* All steps preview */}
         <div style={styles.allSteps}>
@@ -206,6 +225,15 @@ const styles = {
     display: "flex", gap: "10px", padding: "10px 14px",
     borderRadius: "8px", cursor: "pointer", transition: "all 0.2s",
   },
+  completionBox: {
+  background: "#F0FFF4", borderRadius: "12px",
+  padding: "12px 16px", marginBottom: "16px",
+  border: "1px solid #9AE6B4",
+},
+completionText: {
+  color: "#276749", fontSize: "0.85rem",
+  fontWeight: "600", margin: 0, textAlign: "center",
+},
   previewNum: { fontWeight: "bold", color: "#ff6b35", flexShrink: 0 },
   previewText: { fontSize: "0.85rem", color: "#444" },
 };

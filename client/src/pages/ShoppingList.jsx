@@ -1,41 +1,36 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useAuth } from "../context/AuthContext";
 
 export default function ShoppingList() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [items, setItems] = useState([]);
 
-  // ⭐ Re-read localStorage every time page is visited
+  // ⭐ User-specific key
+  const STORAGE_KEY = `smartchef_shopping_${user?.id || "guest"}`;
+
   useEffect(() => {
     loadItems();
-
-    // Also listen for storage changes from other tabs
     window.addEventListener("storage", loadItems);
     return () => window.removeEventListener("storage", loadItems);
-  }, []);
+  }, [user]);
 
   const loadItems = () => {
     try {
-      const saved = localStorage.getItem("smartchef_shopping");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setItems(Array.isArray(parsed) ? parsed : []);
-      } else {
-        setItems([]);
-      }
-    } catch (err) {
-      console.error("Failed to load shopping list:", err);
+      const saved = localStorage.getItem(STORAGE_KEY);
+      setItems(saved ? JSON.parse(saved) : []);
+    } catch {
       setItems([]);
     }
   };
 
   const save = (updated) => {
     try {
-      localStorage.setItem("smartchef_shopping", JSON.stringify(updated));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       setItems(updated);
-    } catch (err) {
-      console.error("Failed to save:", err);
+    } catch {
       toast.error("Failed to save changes");
     }
   };
@@ -48,8 +43,7 @@ export default function ShoppingList() {
   };
 
   const removeItem = (index) => {
-    const updated = items.filter((_, i) => i !== index);
-    save(updated);
+    save(items.filter((_, i) => i !== index));
     toast.success("Item removed");
   };
 
@@ -60,8 +54,7 @@ export default function ShoppingList() {
   };
 
   const clearChecked = () => {
-    const updated = items.filter((item) => !item.checked);
-    save(updated);
+    save(items.filter((item) => !item.checked));
     toast.success("Checked items removed ✅");
   };
 
@@ -77,7 +70,6 @@ export default function ShoppingList() {
 
   return (
     <div style={styles.container} className="page">
-      {/* Header */}
       <div style={styles.header}>
         <button onClick={() => navigate(-1)} style={styles.back}>←</button>
         <h2 style={styles.heading}>🛒 Shopping List</h2>
@@ -104,22 +96,24 @@ export default function ShoppingList() {
               <span style={styles.statLabel}>Total</span>
             </div>
             <div style={styles.statBox}>
-              <span style={{ ...styles.statNum, color: "#48BB78" }}>{checkedCount}</span>
+              <span style={{ ...styles.statNum, color: "#48BB78" }}>
+                {checkedCount}
+              </span>
               <span style={styles.statLabel}>Got It</span>
             </div>
             <div style={styles.statBox}>
-              <span style={{ ...styles.statNum, color: "var(--primary)" }}>{uncheckedCount}</span>
+              <span style={{ ...styles.statNum, color: "#FF6B35" }}>
+                {uncheckedCount}
+              </span>
               <span style={styles.statLabel}>Remaining</span>
             </div>
           </div>
 
-          {/* Progress Bar */}
+          {/* Progress */}
           <div style={styles.progressBar}>
             <div style={{
               ...styles.progressFill,
-              width: items.length > 0
-                ? `${(checkedCount / items.length) * 100}%`
-                : "0%",
+              width: `${items.length > 0 ? (checkedCount / items.length) * 100 : 0}%`,
             }} />
           </div>
 
@@ -127,7 +121,7 @@ export default function ShoppingList() {
             <p style={styles.doneText}>🎉 All items collected! Ready to cook!</p>
           )}
 
-          {/* Action Buttons */}
+          {/* Actions */}
           <div style={styles.actionRow}>
             {checkedCount > 0 && (
               <button onClick={clearChecked} style={styles.clearCheckedBtn}>
@@ -150,7 +144,7 @@ export default function ShoppingList() {
                     style={{
                       ...styles.item,
                       background: item.checked ? "#F0FFF4" : "#fff",
-                      borderColor: item.checked ? "#9AE6B4" : "var(--border)",
+                      borderColor: item.checked ? "#9AE6B4" : "#E5E7EB",
                     }}
                   >
                     <div
@@ -160,15 +154,17 @@ export default function ShoppingList() {
                       <div style={{
                         ...styles.checkbox,
                         background: item.checked ? "#48BB78" : "#fff",
-                        borderColor: item.checked ? "#48BB78" : "var(--border)",
+                        borderColor: item.checked ? "#48BB78" : "#D1D5DB",
                       }}>
-                        {item.checked && <span style={styles.checkmark}>✓</span>}
+                        {item.checked && (
+                          <span style={styles.checkmark}>✓</span>
+                        )}
                       </div>
                       <div>
                         <p style={{
                           ...styles.itemName,
                           textDecoration: item.checked ? "line-through" : "none",
-                          color: item.checked ? "#A0AEC0" : "var(--text)",
+                          color: item.checked ? "#A0AEC0" : "#1C1C1E",
                         }}>
                           {item.name}
                         </p>
@@ -195,38 +191,39 @@ export default function ShoppingList() {
 }
 
 const styles = {
-  container: { minHeight: "100vh", background: "var(--bg)", paddingBottom: "100px" },
+  container: { minHeight: "100vh", background: "#F8F9FA", paddingBottom: "100px" },
   header: {
     display: "flex", alignItems: "center", justifyContent: "space-between",
     padding: "16px 20px", background: "#fff",
-    borderBottom: "1px solid var(--border)",
+    borderBottom: "1px solid #E5E7EB",
     position: "sticky", top: 0, zIndex: 10,
   },
   back: {
-    background: "var(--bg)", border: "none", cursor: "pointer",
+    background: "#F8F9FA", border: "none", cursor: "pointer",
     fontSize: "1.2rem", padding: "8px 12px", borderRadius: "10px", fontWeight: "700",
   },
-  heading: { fontSize: "1.1rem", fontWeight: "800", color: "var(--text)" },
+  heading: { fontSize: "1.1rem", fontWeight: "800", color: "#1C1C1E" },
   emptyBox: { textAlign: "center", padding: "80px 24px" },
   emptyIcon: { fontSize: "4rem", margin: "0 0 16px" },
-  emptyText: { fontSize: "1.2rem", fontWeight: "700", color: "var(--text)", margin: "0 0 8px" },
-  emptyHint: { color: "var(--text-secondary)", marginBottom: "28px", fontSize: "0.9rem" },
+  emptyText: { fontSize: "1.2rem", fontWeight: "700", color: "#1C1C1E", margin: "0 0 8px" },
+  emptyHint: { color: "#9CA3AF", marginBottom: "28px", fontSize: "0.9rem" },
   exploreBtn: {
-    padding: "12px 28px", background: "var(--primary)", color: "#fff",
+    padding: "12px 28px", background: "#FF6B35", color: "#fff",
     border: "none", borderRadius: "12px", cursor: "pointer", fontWeight: "700",
   },
   content: { padding: "20px 16px" },
   statsRow: { display: "flex", gap: "12px", marginBottom: "16px" },
   statBox: {
-    flex: 1, background: "#fff", borderRadius: "var(--radius-md)",
+    flex: 1, background: "#fff", borderRadius: "14px",
     padding: "14px", textAlign: "center",
     display: "flex", flexDirection: "column", gap: "4px",
-    boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+    border: "1px solid #E5E7EB",
   },
-  statNum: { fontSize: "1.8rem", fontWeight: "800", color: "var(--text)" },
-  statLabel: { fontSize: "0.75rem", color: "var(--text-secondary)" },
+  statNum: { fontSize: "1.8rem", fontWeight: "800", color: "#1C1C1E" },
+  statLabel: { fontSize: "0.75rem", color: "#9CA3AF" },
   progressBar: {
-    height: "8px", background: "var(--border)",
+    height: "8px", background: "#E5E7EB",
     borderRadius: "4px", marginBottom: "8px",
   },
   progressFill: {
@@ -235,7 +232,7 @@ const styles = {
   },
   doneText: {
     color: "#48BB78", fontWeight: "700",
-    textAlign: "center", marginBottom: "16px",
+    textAlign: "center", marginBottom: "16px", fontSize: "0.95rem",
   },
   actionRow: { display: "flex", gap: "10px", marginBottom: "24px", flexWrap: "wrap" },
   clearCheckedBtn: {
@@ -244,21 +241,21 @@ const styles = {
     cursor: "pointer", fontWeight: "600", fontSize: "0.85rem",
   },
   clearAllBtn: {
-    padding: "10px 16px", background: "#FFF5F5", color: "#FC8181",
-    border: "1px solid #FEB2B2", borderRadius: "10px",
+    padding: "10px 16px", background: "#FFF5F5", color: "#EF4444",
+    border: "1px solid #FECACA", borderRadius: "10px",
     cursor: "pointer", fontWeight: "600", fontSize: "0.85rem",
   },
   group: { marginBottom: "24px" },
   groupTitle: {
-    fontWeight: "700", color: "var(--primary)", marginBottom: "10px",
+    fontWeight: "700", color: "#FF6B35", marginBottom: "10px",
     fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.5px",
   },
   itemList: { display: "flex", flexDirection: "column", gap: "8px" },
   item: {
     display: "flex", justifyContent: "space-between", alignItems: "center",
-    padding: "14px 16px", borderRadius: "var(--radius-md)",
+    padding: "14px 16px", borderRadius: "14px",
     border: "1px solid", transition: "all 0.2s",
-    boxShadow: "var(--shadow-sm)",
+    boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
   },
   itemLeft: {
     display: "flex", alignItems: "center",
@@ -271,10 +268,9 @@ const styles = {
   },
   checkmark: { color: "#fff", fontSize: "0.85rem", fontWeight: "800" },
   itemName: { margin: 0, fontWeight: "600", fontSize: "0.95rem", transition: "all 0.2s" },
-  itemQty: { margin: 0, fontSize: "0.8rem", color: "var(--primary)", fontWeight: "500" },
+  itemQty: { margin: 0, fontSize: "0.8rem", color: "#FF6B35", fontWeight: "500" },
   removeBtn: {
     background: "none", border: "none", cursor: "pointer",
-    color: "#CBD5E0", fontSize: "0.9rem", padding: "4px 8px",
-    borderRadius: "6px",
+    color: "#D1D5DB", fontSize: "0.9rem", padding: "4px 8px", borderRadius: "6px",
   },
 };

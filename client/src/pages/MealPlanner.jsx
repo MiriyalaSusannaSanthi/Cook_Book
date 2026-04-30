@@ -79,6 +79,7 @@ export default function MealPlanner() {
   };
 
   const generateShoppingList = () => {
+    const STORAGE_KEY = `smartchef_shopping_${user?.id || "guest"}`;
     const allIngredients = [];
     DAYS.forEach((day) => {
       MEALS.forEach((meal) => {
@@ -96,14 +97,11 @@ export default function MealPlanner() {
       });
     });
 
-    if (allIngredients.length === 0) {
-      return toast.error("No meals planned yet!");
-    }
-
-    localStorage.setItem("smartchef_shopping", JSON.stringify(allIngredients));
-    toast.success(`${allIngredients.length} ingredients added to shopping list! 🛒`);
-    navigate("/shopping-list");
-  };
+   if (allIngredients.length === 0) return toast.error("No meals planned yet!");
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(allIngredients));
+  toast.success(`${allIngredients.length} ingredients added! 🛒`);
+  navigate("/shopping-list");
+};
 
   const totalMeals = DAYS.reduce((acc, day) =>
     acc + MEALS.filter((meal) => plan[day]?.[meal]).length, 0

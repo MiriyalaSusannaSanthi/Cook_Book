@@ -28,37 +28,27 @@ export default function RecipeDetail() {
 
   const handleAddToShoppingList = () => {
   try {
+    // ⭐ User-specific key
+    const STORAGE_KEY = `smartchef_shopping_${user?.id || "guest"}`;
     const existing = JSON.parse(
-      localStorage.getItem("smartchef_shopping") || "[]"
+      localStorage.getItem(STORAGE_KEY) || "[]"
     );
-
     const newItems = recipe.ingredients.map((ing) => ({
       name: ing.name,
       quantity: ing.quantity,
       recipeName: recipe.title,
       checked: false,
     }));
-
     const filtered = existing.filter(
       (item) => item.recipeName !== recipe.title
     );
-
     const updated = [...filtered, ...newItems];
-    localStorage.setItem("smartchef_shopping", JSON.stringify(updated));
-
-    // ⭐ Verify it saved correctly
-    const verify = localStorage.getItem("smartchef_shopping");
-    if (verify) {
-      toast.success(`${newItems.length} ingredients added to shopping list! 🛒`);
-    } else {
-      toast.error("Failed to save to shopping list");
-    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    toast.success(`${newItems.length} ingredients added to shopping list! 🛒`);
   } catch (err) {
-    console.error("Shopping list error:", err);
     toast.error("Failed to save to shopping list");
   }
 };
-
   if (loading) return <p style={styles.loading}>Loading recipe...</p>;
   if (!recipe) return <p style={styles.loading}>Recipe not found.</p>;
 
