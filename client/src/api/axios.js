@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://smart-chef-o9dq.onrender.com",
+  baseURL: import.meta.env.VITE_API_URL || "https://smart-chef-o9dq.onrender.com"+"/api",
 });
 
 API.interceptors.request.use((req) => {
