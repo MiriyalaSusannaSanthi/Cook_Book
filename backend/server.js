@@ -8,23 +8,33 @@ connectDB();
 
 const app = express();
 
-// ⭐ Fix CORS — allow both localhost and Vercel
+// ⭐ Allow ALL Vercel deployments (including preview URLs)
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://cook-book-mu-weld.vercel.app",
-  ],
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      "http://localhost:5173",
+      "http://localhost:3000",
+    ];
+
+    // Allow any vercel.app subdomain
+    if (
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      origin.endsWith(".vercel.app")
+    ) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
-// ⭐ Handle preflight requests
 app.options("*", cors());
-
 app.use(express.json());
 
-// Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/recipes", require("./routes/recipeRoutes"));
 app.use("/api/recipes/:id/comments", require("./routes/commentRoutes"));
