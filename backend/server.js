@@ -10,7 +10,10 @@ const app = express();
 
 // ✅ FIXED CORS
 app.use(cors({
-  origin: "https://cook-book-o4ar.vercel.app",
+  origin: [
+    "http://localhost:5173",
+    "https://cook-book-mu-weld.vercel.app", // your Vercel URL
+  ],
   credentials: true,
 }));
 
