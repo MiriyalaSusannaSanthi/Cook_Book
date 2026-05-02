@@ -8,21 +8,23 @@ connectDB();
 
 const app = express();
 
-// ✅ FIXED CORS
+// ⭐ Fix CORS — allow both localhost and Vercel
 app.use(cors({
   origin: [
     "http://localhost:5173",
     "https://cook-book-mu-weld.vercel.app",
   ],
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
-// ✅ FIXED preflight
+// ⭐ Handle preflight requests
 app.options("*", cors());
 
 app.use(express.json());
 
-// ✅ Routes
+// Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/recipes", require("./routes/recipeRoutes"));
 app.use("/api/recipes/:id/comments", require("./routes/commentRoutes"));
