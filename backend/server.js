@@ -12,7 +12,7 @@ const app = express();
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://cook-book-mu-weld.vercel.app", // your Vercel URL
+    "https://cook-book-mu-weld.vercel.app",
   ],
   credentials: true,
 }));
