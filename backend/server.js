@@ -8,25 +8,25 @@ connectDB();
 
 const app = express();
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (
-      !origin ||
-      origin === "http://localhost:5173" ||
-      origin === "http://localhost:3000" ||
-      origin.endsWith(".vercel.app")
-    ) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (
+    !origin ||
+    origin === "http://localhost:5173" ||
+    origin === "http://localhost:3000" ||
+    (origin && origin.endsWith(".vercel.app"))
+  ) {
+    res.setHeader("Access-Control-Allow-Origin", origin || "*");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
+  }
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
-app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use("/api/auth", require("./routes/authRoutes"));
